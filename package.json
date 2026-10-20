@@ -1,0 +1,10 @@
+{
+  "name": "zotero-latin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/translit.test.js",
+    "build": "rm -f zotero-latin.xpi && cd addon && zip -qr ../zotero-latin.xpi .",
+    "release": "node scripts/release.js"
+  }
+}

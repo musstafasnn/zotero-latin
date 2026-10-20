@@ -1,0 +1,18 @@
+{
+  "addons": {
+    "zotero-latin@mirket": {
+      "updates": [
+        {
+          "version": "0.1.0",
+          "update_link": "https://github.com/musstafasnn/zotero-latin/releases/download/v0.1.0/zotero-latin.xpi",
+          "applications": {
+            "zotero": {
+              "strict_min_version": "7.0",
+              "strict_max_version": "10.*"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

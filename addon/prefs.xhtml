@@ -1,0 +1,31 @@
+<vbox id="zotero-latin-pane">
+  <groupbox>
+    <description>Kayıtları seçip sağ tıklayın → "Latin harflerine çevir". Arapça orijinal kaydın altına not olarak eklenir. Her sağlayıcının anahtarı ve modeli ayrı saklanır.</description>
+    <hbox align="center">
+      <label value="Sağlayıcı:"/>
+      <menulist id="zotero-latin-provider" preference="extensions.zotero-latin.provider" native="true">
+        <menupopup>
+          <menuitem label="Google Gemini (ücretsiz, hızlı)" value="gemini"/>
+          <menuitem label="OpenRouter (ücretsiz modeller, Claude, Llama, DeepSeek…)" value="openrouter"/>
+          <menuitem label="NVIDIA build (ücretsiz)" value="nvidia"/>
+          <menuitem label="OpenAI" value="openai"/>
+          <menuitem label="Groq" value="groq"/>
+          <menuitem label="DeepSeek" value="deepseek"/>
+          <menuitem label="Mistral" value="mistral"/>
+          <menuitem label="Ollama (bu bilgisayarda, anahtarsız)" value="ollama"/>
+          <menuitem label="Diğer (OpenAI uyumlu adres)" value="custom"/>
+        </menupopup>
+      </menulist>
+    </hbox>
+    <html:label for="zotero-latin-base-url">Adres (yalnızca "Diğer" için)</html:label>
+    <html:input type="text" id="zotero-latin-base-url" preference="extensions.zotero-latin.baseURL" placeholder="https://…/v1"/>
+    <html:label for="zotero-latin-api-key">API anahtarı</html:label>
+    <html:input type="password" id="zotero-latin-api-key" autocomplete="off"/>
+    <hbox align="center">
+      <label value="Model:"/>
+      <html:select id="zotero-latin-model"/>
+      <button id="zotero-latin-refresh" label="Listeyi yenile"/>
+    </hbox>
+    <description id="zotero-latin-model-status"/>
+  </groupbox>
+</vbox>
