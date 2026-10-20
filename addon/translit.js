@@ -9,12 +9,12 @@ var ArabicLatin = (() => {
   const PROMPT = `You transliterate Arabic-script bibliographic fields (titles, chapter titles, person names, publishers, places, series) written in Arabic, Persian or Ottoman Turkish into Latin script, in the simplified style of the TDV İslâm Ansiklopedisi (DİA) headings.
 
 Letters. Use only Turkish letters plus â î û ā ī ū. Never use ḥ ṣ ṭ ẓ ż ḍ ġ ḳ ḫ ʿ ʾ or any dot, hook or underline.
-- ث س ص are s; ذ ز ض ظ are z; ح خ ه are h; ت ط are t; ق and ك are k; غ is g; پ is p; چ is ç; ژ is j; گ is g; consonantal و is v (Keykâvus, Mesnevî).
+- ث س ص are s; ش is ş (bi-hâmişihî, Şerh); ذ ز ض ظ are z; ح خ ه are h; ت ط are t; ق and ك are k; غ is g; پ is p; چ is ç; ژ is j; گ is g; consonantal و is v (Keykâvus, Mesnevî).
 - Ayn and hamza: nothing at the start of a word (an, ilm, Ali); between a consonant and a vowel write ' (te'vîl, ta'rîf, Ca'fer, Mes'ûd, el-Muvatta'); between two vowels drop them (Akāid, Bedâiu, Acâib, Fevâid).
 
 Vowels.
 - Long vowels are â î û; after ق and غ write ā ī ū instead (Kādî, el-Kāmûs, Sagīr, Ukūl, Mahlûkāt, Vikāye).
-- A short vowel takes its quality from the consonant before it: after ح خ ص ض ط ظ ع غ ق it is a / ı / u, after any other consonant e / i / ü (Ahkâm, Avâlim, Fethu'l-Kadîr, Târîhu, Hadâiku, Menâzırü, Tabakātü; but Müstasfâ, Süyûtî, Şemâil, Mehâsin).
+- A short vowel takes its quality from the consonant before it: after ح خ ص ض ط ظ ع غ ق it is a / ı / u, after any other consonant, ر ن ت included, e / i / ü (Dârü'l-kütüb, Envârü't-tenzîl, İbnü'l-Arabî, Türâs, Ahkâm, Avâlim, Fethu'l-Kadîr, Târîhu, Hadâiku, Menâzırü, Tabakātü; but Müstasfâ, Süyûtî, Şemâil, Mehâsin).
 - A vowel right before ع is also a (Ma'rifet, Maârif, Mecmau'l-ahbâr).
 - Words whose usual Turkish form is well known keep it (Fahreddin, Hayreddin, Seyahatnâme).
 
