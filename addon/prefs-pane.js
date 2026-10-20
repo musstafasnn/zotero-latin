@@ -15,7 +15,23 @@ var ZoteroLatinPrefs = {
     this.model.addEventListener('change', () => this.set('model', this.model.value));
     document.getElementById('zotero-latin-base-url').addEventListener('change', () => this.loadModels());
     document.getElementById('zotero-latin-refresh').addEventListener('command', () => this.loadModels());
+    document.getElementById('zotero-latin-update').addEventListener('command', (event) => this.checkForUpdates(event.target));
     this.load();
+  },
+
+  async checkForUpdates(button) {
+    const status = document.getElementById('zotero-latin-update-status');
+    button.disabled = true;
+    status.textContent = 'Kontrol ediliyor…';
+    try {
+      status.textContent = await Zotero.ZoteroLatin.checkForUpdates();
+    }
+    catch (e) {
+      status.textContent = e.message;
+    }
+    finally {
+      button.disabled = false;
+    }
   },
 
   seq: 0,

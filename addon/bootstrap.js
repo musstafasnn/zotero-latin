@@ -1,4 +1,4 @@
-/* global Zotero, Services, ArabicLatin, setInterval, clearInterval */
+/* global Zotero, Services, ChromeUtils, ArabicLatin, setInterval, clearInterval */
 const PREF = 'extensions.zotero-latin.';
 const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/';
 const PROVIDERS = {
@@ -37,7 +37,7 @@ function startup({ id, rootURI }) {
   Services.scriptloader.loadSubScript(rootURI + 'translit.js');
   migrateSingleKey();
   // The settings pane script reaches the plugin through this object.
-  Zotero.ZoteroLatin = { listModels, defaultModel: (name) => PROVIDERS[name]?.model || '' };
+  Zotero.ZoteroLatin = { listModels, defaultModel: (name) => PROVIDERS[name]?.model || '', checkForUpdates: () => checkForUpdates(id) };
   Zotero.PreferencePanes.register({
     pluginID: id,
     id: PREF_PANE_ID,
@@ -418,6 +418,34 @@ async function revert(item, notes) {
     await item.save();
   });
   return complete;
+}
+
+// Asks manifest.json's update_url now instead of waiting for Zotero's daily check, and installs a newer version.
+// Returns a message for the settings pane; throws a user-readable Error.
+async function checkForUpdates(id) {
+  try {
+    const { AddonManager } = ChromeUtils.importESModule('resource://gre/modules/AddonManager.sys.mjs');
+    const addon = await AddonManager.getAddonByID(id);
+    const install = await new Promise((resolve, reject) => {
+      let found = null;
+      addon.findUpdates({
+        onUpdateAvailable: (a, i) => {
+          found = i;
+        },
+        onUpdateFinished: (a, status) => (status === AddonManager.UPDATE_STATUS_NO_ERROR
+          ? resolve(found)
+          : reject(new Error(`zotero-latin update check failed with status ${status}`))),
+      }, AddonManager.UPDATE_WHEN_USER_REQUESTED);
+    });
+    if (!install) return `En güncel sürüm kurulu (${addon.version}).`;
+    // Resolves once the new version has started, which also reloads this settings pane.
+    await install.install();
+    return `${install.version} sürümü kuruldu.`;
+  }
+  catch (e) {
+    Zotero.logError(e);
+    throw new Error('Güncelleme denetlenemedi: internet bağlantısını kontrol edip tekrar deneyin.');
+  }
 }
 
 function notify(text) {

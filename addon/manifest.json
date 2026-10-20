@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Arapça → Latin",
   "version": "0.2.0",
-  "description": "Arapça, Farsça ve Osmanlıca kayıtları DİA okunuşuyla Latin harflerine çevirir, orijinali alt notta saklar. Muhammed Eşref AYTAÇ hocam için özel geliştirildi.",
+  "description": "Muhammed Eşref AYTAÇ hocam için özel geliştirildi.",
   "applications": {
     "zotero": {
       "id": "zotero-latin@mirket",
