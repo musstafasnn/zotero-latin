@@ -1,6 +1,6 @@
 {
   "name": "zotero-latin",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "test": "node --test test/translit.test.js",
