@@ -4,6 +4,10 @@ Muhammed Eşref AYTAÇ hocam için özel geliştirildi.
 
 Kayıtları seçip sağ tıklayın → **Latin harflerine çevir**. Seçili kayıtlardaki Arapça harfli tüm alanları (başlık, kitap/bölüm adı, yazar, yayınevi, yer, seri…) DİA okunuşuyla Latin harflerine çevirir. Arapça orijinal, kaydın altına "Arapça orijinal" notu olarak eklenir. Özet ve Ekstra alanlarına dokunulmaz.
 
+Yazım İSNAD 2'ye göredir: uzatmalar her zaman gösterilir (Abdullâh, Sa'îd), noktalı harf kullanılmaz. Arap müelliflerde "el-" takısı ad alanının sonuna alınır (Soyadı: Gazzâlî, Adı: Ebû Hâmid Muhammed el-); böylece dipnotta "Ebû Hâmid Muhammed el-Gazzâlî" yazılır, kaynakçada G harfine sıralanır.
+
+**Türâs (app.turath.io) sayfaları** kitaba dönüştürülür: eklenti kitabın künyesini Türâs'tan alır; yazar, muhakkik ("thk.", Zotero'da Dizi Editörü), yayınevi, yer, hicrî/milâdî yıl ve cilt sayısı doldurulur, sayfanın adresi ve erişim tarihi silinir (bağlantı ekteki anlık görüntüde kalır). Cilt/sayfayı (3/232) atıfta siz girersiniz. Milâdî yıl künyede yoksa yaklaşık hesaplanır (±1 olabilir). Not: Zotero'nun İSNAD stili tarih alanındaki "1418/1998"den yalnızca ilk yılı basar; dipnotta "1418/1998" görmek için Word'de elle düzeltin.
+
 Yanlış çevrildiyse kayıtları seçip sağ tıklayın → **Latin çeviriyi geri al**. Arapça değerler geri gelir ve "Arapça orijinal" notu çöp kutusuna gider. Çeviriden sonra elle değiştirdiğiniz alanlara dokunulmaz; o zaman not da yerinde kalır. Notu elle düzenlerseniz o kayıt için geri alma bilgisi kaybolur.
 
 Çeviri sürerken köşede her kayıt için dönen bir gösterge çıkar, bitince ✓ ya da ✗ olur. Çeviriyi seçtiğiniz yapay zeka yapar: Google Gemini (ücretsiz kota, varsayılan gemini-3.1-flash-lite; kota/yoğunlukta otomatik olarak sıradaki modele geçer), OpenAI, NVIDIA, OpenRouter, Groq, DeepSeek, Mistral, Ollama (yerel) ya da OpenAI uyumlu başka bir adres. Zotero 7–10 sürümlerinde, Windows/macOS/Linux üzerinde çalışır.

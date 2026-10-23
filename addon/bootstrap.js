@@ -15,6 +15,7 @@ const PROVIDERS = {
   custom: {},
 };
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+const TURATH_API = 'https://api.turath.io/book?include=indexes&ver=3&id=';
 const ITEMS_PER_REQUEST = 10;
 const RETRY_STATUSES = [429, 500, 503];
 const RETRY_DELAY_MS = 30000;
@@ -118,8 +119,24 @@ const providerPref = (name, provider = currentProvider()) => pref(`${name}.${pro
 
 function jobFor(item) {
   if (!item.isRegularItem() || !item.library.editable) return null;
-  const entries = ArabicLatin.collect(item.toJSON());
-  return entries.length ? { item, entries } : null;
+  // A Türâs page becomes the book it is from, also when its title was transliterated before.
+  const turath = item.itemType === 'webpage' ? ArabicLatin.turathBookId(item.getField('url')) : null;
+  const entries = turath ? [] : ArabicLatin.collect(item.toJSON());
+  return turath || entries.length ? { item, entries, turath } : null;
+}
+
+// Fetches the book card of a Türâs job and replaces its entries with the card's. Returns false on failure.
+async function loadCard(job) {
+  try {
+    const xhr = await Zotero.HTTP.request('GET', TURATH_API + job.turath, { responseType: 'json', timeout: 20000 });
+    job.card = ArabicLatin.parseCard(xhr.response);
+    job.entries = ArabicLatin.cardEntries(job.card);
+    return true;
+  }
+  catch (e) {
+    Zotero.logError(e);
+    return false;
+  }
 }
 
 async function translate(jobs) {
@@ -152,12 +169,22 @@ async function translate(jobs) {
   const usedFallback = new Set();
   try {
     for (let i = 0; i < jobs.length; i += ITEMS_PER_REQUEST) {
-      const batch = jobs.slice(i, i + ITEMS_PER_REQUEST);
-      let latin;
+      const batch = [];
+      for (const job of jobs.slice(i, i + ITEMS_PER_REQUEST)) {
+        if (!job.turath || await loadCard(job)) batch.push(job);
+        else {
+          errors.add('Türâs künye bilgisi alınamadı: internet bağlantısını kontrol edip tekrar deneyin.');
+          finish(job, false);
+        }
+      }
+      const texts = batch.flatMap((j) => j.entries.map((e) => e.text));
+      let latin = [];
       try {
-        const result = await request(engine, batch.flatMap((j) => j.entries.map((e) => e.text)));
-        latin = result.latin;
-        if (result.model !== engine.models[0]) usedFallback.add(result.model);
+        if (texts.length) {
+          const result = await request(engine, texts);
+          latin = result.latin;
+          if (result.model !== engine.models[0]) usedFallback.add(result.model);
+        }
       }
       catch (e) {
         Zotero.logError(e);
@@ -167,7 +194,8 @@ async function translate(jobs) {
       }
       let k = 0;
       for (const job of batch) {
-        await apply(job.item, job.entries, latin.slice(k, k += job.entries.length));
+        const slice = latin.slice(k, k += job.entries.length);
+        await (job.card ? applyBook(job.item, job.card, job.entries, slice) : apply(job.item, job.entries, slice));
         finish(job, true);
         done++;
       }
@@ -344,13 +372,51 @@ async function apply(item, entries, latin) {
   for (const i of changedCreators) {
     const c = original[i];
     rows.push([Zotero.CreatorTypes.getLocalizedString(c.creatorType), c.name || [c.lastName, c.firstName].filter(Boolean).join(', ')]);
+    if (c.name !== undefined) continue;
+    const [lastName, firstName] = ArabicLatin.moveArticle(creators[i].lastName, creators[i].firstName || '');
+    if (lastName === creators[i].lastName) continue;
+    Object.assign(creators[i], { lastName, firstName });
+    // Both names change now, so both need an undo entry.
+    for (const key of ['lastName', 'firstName']) {
+      if (!applied.some((e) => e.creator === i && e.key === key)) applied.push({ creator: i, key, text: c[key] || '' });
+    }
   }
   if (!rows.length) return;
 
   item.setCreators(creators);
   // Read the latin back from the item: Zotero normalizes values on set, and undo compares against what is stored.
   const saved = item.getCreatorsJSON();
-  const undo = applied.map((e) => ({ ...e, latin: e.field ? item.getField(e.field) : saved[e.creator][e.key] }));
+  const undo = applied.map((e) => ({ ...e, latin: e.field ? item.getField(e.field) : saved[e.creator][e.key] || '' }));
+  await saveWithNote(item, rows, undo);
+}
+
+// Turns a Türâs web page into the book it is from. Undo keeps the whole page: its type, fields and creators.
+async function applyBook(item, card, entries, latin) {
+  if (item.deleted || item.itemType !== 'webpage') return;
+  const { fields, creators } = ArabicLatin.bookFromCard(card, entries, latin);
+  const names = [...new Set([...item.getUsedFields(true), ...Object.keys(fields)])];
+  const before = Object.fromEntries(names.map((f) => [f, item.getField(f)]));
+  const creatorsBefore = JSON.stringify(item.getCreatorsJSON());
+
+  item.setType(Zotero.ItemTypes.getID('book'));
+  for (const [f, value] of Object.entries(fields)) item.setField(f, value);
+  item.setCreators(creators);
+
+  const label = (k) => (k === 'author' ? Zotero.CreatorTypes.getLocalizedString('author')
+    : k === 'editor' ? Zotero.CreatorTypes.getLocalizedString('seriesEditor') : Zotero.ItemFields.getLocalizedString(k));
+  const rows = [['Türâs', before.title], ...entries.map((e) => [label(e.card), card[e.card]])];
+  const undo = [
+    { field: 'itemType', text: 'webpage', latin: 'book' },
+    // A field the book does not have (websiteTitle) reads as empty.
+    ...names.map((f) => ({ field: f, text: before[f], latin: validField(item, f) ? item.getField(f) : '' })),
+    { creators: true, text: creatorsBefore, latin: JSON.stringify(item.getCreatorsJSON()) },
+  ];
+  await saveWithNote(item, rows, undo);
+}
+
+const validField = (item, field) => Zotero.ItemFields.isValidForType(Zotero.ItemFields.getID(field), item.itemTypeID);
+
+async function saveWithNote(item, rows, undo) {
   await Zotero.DB.executeTransaction(async () => {
     await item.save();
     const note = new Zotero.Item('note');
@@ -364,7 +430,9 @@ async function apply(item, entries, latin) {
 // [{ note, undo }] for the item's "Arapça orijinal" notes that still carry undo data.
 function undoNotes(item) {
   if (!item.isRegularItem() || !item.library.editable) return [];
-  return Zotero.Items.get(item.getNotes()).map((note) => ({ note, undo: undoData(note) })).filter((n) => n.undo);
+  // Newest first, so a book conversion is undone before the translation that came before it.
+  return Zotero.Items.get(item.getNotes()).sort((a, b) => b.id - a.id)
+    .map((note) => ({ note, undo: undoData(note) })).filter((n) => n.undo);
 }
 
 function undoData(note) {
@@ -398,17 +466,7 @@ async function revert(item, notes) {
   let complete = true;
   await Zotero.DB.executeTransaction(async () => {
     for (const { note, undo } of notes) {
-      const creators = item.getCreatorsJSON();
-      let all = true;
-      for (const e of undo) {
-        if (e.field) {
-          if (item.getField(e.field) === e.latin) item.setField(e.field, e.text);
-          else all = false;
-        }
-        else if (creators[e.creator]?.[e.key] === e.latin) creators[e.creator][e.key] = e.text;
-        else all = false;
-      }
-      item.setCreators(creators);
+      const all = undo.some((e) => e.field === 'itemType') ? revertBook(item, undo) : revertFields(item, undo);
       if (all) {
         note.deleted = true;
         await note.save();
@@ -418,6 +476,35 @@ async function revert(item, notes) {
     await item.save();
   });
   return complete;
+}
+
+function revertFields(item, undo) {
+  const creators = item.getCreatorsJSON();
+  let all = true;
+  for (const e of undo) {
+    if (e.field) {
+      if (item.getField(e.field) === e.latin) item.setField(e.field, e.text);
+      else all = false;
+    }
+    else if (creators[e.creator] && (creators[e.creator][e.key] || '') === e.latin) creators[e.creator][e.key] = e.text;
+    else all = false;
+  }
+  item.setCreators(creators);
+  return all;
+}
+
+// A converted Türâs page goes back as a whole, and only while nothing of the book was edited since.
+function revertBook(item, undo) {
+  const intact = undo.every((e) => (e.field === 'itemType' ? item.itemType === e.latin
+    : e.creators ? JSON.stringify(item.getCreatorsJSON()) === e.latin
+      : (validField(item, e.field) ? item.getField(e.field) : '') === e.latin));
+  if (!intact) return false;
+  item.setType(Zotero.ItemTypes.getID(undo.find((e) => e.field === 'itemType').text));
+  for (const e of undo) {
+    if (e.creators) item.setCreators(JSON.parse(e.text));
+    else if (e.field !== 'itemType' && validField(item, e.field)) item.setField(e.field, e.text);
+  }
+  return true;
 }
 
 // Asks manifest.json's update_url now instead of waiting for Zotero's daily check, and installs a newer version.
