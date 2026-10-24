@@ -3,9 +3,9 @@
     "zotero-latin@mirket": {
       "updates": [
         {
-          "version": "0.3.0",
-          "update_link": "https://github.com/musstafasnn/zotero-latin/releases/download/v0.3.0/zotero-latin.xpi",
-          "update_hash": "sha256:8a5eb51d9b79de8ded1b97d8b428abbe198d501f2010dc20b0f9ed4e00359ae4",
+          "version": "0.3.1",
+          "update_link": "https://github.com/musstafasnn/zotero-latin/releases/download/v0.3.1/zotero-latin.xpi",
+          "update_hash": "sha256:36258ddf208b8182bb1bb7f7737ef7966abab5c1dab64a3b43639167c5b9c00d",
           "applications": {
             "zotero": {
               "strict_min_version": "7.0",
