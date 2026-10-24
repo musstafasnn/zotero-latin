@@ -154,15 +154,16 @@ test('parseCard reads a Türâs book card', () => {
     editor: 'محمد عبد الرحمن المرعشلي',
     publisher: 'دار إحياء التراث العربي',
     place: 'بيروت',
-    date: '1418/1998',
+    date: '1418',
     edition: '',
     numberOfVolumes: '5',
   });
   const lisan = parseCard({ meta: { info: 'الكتاب: لسان العرب\nالمؤلف: محمد بن مكرم بن على، أبو الفضل، جمال الدين ابن منظور الأنصاري الرويفعى الإفريقى (ت ٧١١هـ)\nالحواشي: لليازجي وجماعة من اللغويين\nالناشر: دار صادر - بيروت\nالطبعة: الثالثة - ١٤١٤ هـ\nعدد الأجزاء: ١٥' } });
   assert.equal(lisan.author, 'محمد بن مكرم بن على، أبو الفضل، جمال الدين ابن منظور الأنصاري الرويفعى الإفريقى');
-  assert.deepEqual([lisan.date, lisan.edition, lisan.numberOfVolumes, lisan.editor], ['1414/1994', '3', '15', '']);
+  assert.deepEqual([lisan.date, lisan.edition, lisan.numberOfVolumes, lisan.editor], ['1414', '3', '15', '']);
   const keshshaf = parseCard({ meta: { name: 'x', info: 'الكتاب: الكشاف\nالمؤلف: محمود بن عمر بن أحمد الزمخشري [ت ٥٣٨ هـ]\n• وبهامشه أربعة كتب:\nالناشر: دار الكتاب العربي - بيروت\nالطبعة: الثالثة - ١٤٠٧ هـ - ١٩٨٧ م' } });
   assert.deepEqual([keshshaf.author, keshshaf.date, keshshaf.numberOfVolumes], ['محمود بن عمر بن أحمد الزمخشري', '1407/1987', '']);
+  assert.equal(parseCard({ meta: { info: 'الطبعة: الأولى، ١٩٩٨ م' } }).date, '1998');
   const fath = parseCard({ meta: { info: 'الناشر: دار ابن كثير، دار الكلم الطيب - دمشق، بيروت' } });
   assert.deepEqual([fath.publisher, fath.place, fath.date], ['دار ابن كثير، دار الكلم الطيب', 'دمشق، بيروت', '']);
   assert.throws(() => parseCard({}), /no book card/);
@@ -177,7 +178,7 @@ test('cardEntries marks the author; bookFromCard builds the İSNAD book', () => 
     "Muhammed Abdürrahmân el-Mar'aşlî", "Dâru İhyâi't-Turâsi'l-Arabî", 'Beyrut'];
   assert.deepEqual(bookFromCard(card, entries, latin), {
     fields: {
-      title: "Envârü't-tenzîl ve esrârü't-te'vîl", publisher: "Dâru İhyâi't-Turâsi'l-Arabî", place: 'Beyrut', date: '1418/1998',
+      title: "Envârü't-tenzîl ve esrârü't-te'vîl", publisher: "Dâru İhyâi't-Turâsi'l-Arabî", place: 'Beyrut', date: '1418',
       edition: '', numberOfVolumes: '5', url: '', accessDate: '', abstractNote: '', shortTitle: '',
     },
     creators: [

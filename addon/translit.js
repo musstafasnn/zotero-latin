@@ -134,11 +134,9 @@ Input is a JSON array of strings. Output only a JSON array of the same length wi
 
   const ORDINALS = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة', 'التاسعة', 'العاشرة'];
   const latinDigits = (s) => s.replace(/[٠-٩]/g, (d) => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, (d) => d.charCodeAt(0) - 0x6f0);
-  // shortcut: the usual H - H/33 + 622 estimate can be a year off; a card that also gives the Gregorian year wins.
-  const gregorian = (hijri) => hijri + 622 - Math.floor(hijri / 33);
 
-  // api.turath.io/book response -> the book's fields from its card: text fields in Arabic, date "1418/1998",
-  // edition (empty for the first) and numberOfVolumes in Latin digits.
+  // api.turath.io/book response -> the book's fields from its card: text fields in Arabic, date as the card gives it
+  // ("1418", "1998" or "1407/1987"; no year is computed), edition (empty for the first) and numberOfVolumes in Latin digits.
   function parseCard(body) {
     const info = body?.meta?.info;
     if (typeof info !== 'string') throw new Error('Türâs returned no book card');
@@ -162,7 +160,7 @@ Input is a JSON array of strings. Output only a JSON array of the same length wi
       editor: get(/^(المحقق|تحقيق|حققه|دراسة وتحقيق)$/),
       publisher: publisher.trim(),
       place: place.trim(),
-      date: hijri ? `${hijri}/${greg || gregorian(Number(hijri))}` : greg || '',
+      date: [hijri, greg].filter(Boolean).join('/'),
       edition: ordinal > 1 ? String(ordinal) : '',
       numberOfVolumes: /\d+/.exec(latinDigits(get(/^عدد الأجزاء$/)))?.[0] || (volumes > 1 ? String(volumes) : ''),
     };
